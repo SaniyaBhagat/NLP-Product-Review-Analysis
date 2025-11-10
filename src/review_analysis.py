@@ -17,13 +17,9 @@ from textblob import TextBlob
 csv_path = r"C:\Users\bhaga\OneDrive\Desktop\NLP\NLP-Project\flipkart_reviews_translated.csv"
 df = pd.read_csv(csv_path)
 
-# Ensure 'Translated_Review' exists
 if 'Translated_Review' not in df.columns:
     raise KeyError("Column 'Translated_Review' not found in CSV.")
 
-# -----------------------------
-# Clean review column
-# -----------------------------
 print("Creating 'clean_review' column...")
 stop_words = set(stopwords.words('english'))
 lemmatizer = WordNetLemmatizer()
@@ -37,9 +33,7 @@ def clean_text(text):
 
 df['clean_review'] = df['Translated_Review'].fillna('').astype(str).apply(clean_text)
 
-# -----------------------------
-# POS Tagging
-# -----------------------------
+
 print("Performing POS tagging...")
 all_tokens = [word_tokenize(r) for r in df['clean_review']]
 all_tags = [pos_tag(tokens) for tokens in all_tokens]
@@ -53,13 +47,10 @@ for tags in all_tags:
 pos_df = pd.DataFrame(list(pos_counts.items()), columns=['POS', 'Count']).sort_values(by='Count', ascending=False)
 print("\nTop POS tags:\n", pos_df.head(10))
 
-# -----------------------------
-# Named Entity Recognition
-# -----------------------------
-print("Performing NER...")
+print("\n Performing NER...")
 ner_results = [ne_chunk(tags) for tags in all_tags]
 
-# Collect entities
+
 entities = []
 for tree in ner_results:
     for subtree in tree:
@@ -70,9 +61,6 @@ for tree in ner_results:
 entity_df = pd.DataFrame(entities, columns=['Entity', 'Type'])
 print("\nTop entities:\n", entity_df['Entity'].value_counts().head(10))
 
-# -----------------------------
-# Bag-of-Words & TF-IDF
-# -----------------------------
 print("Creating BoW and TF-IDF matrices...")
 bow_vectorizer = CountVectorizer()
 bow_matrix = bow_vectorizer.fit_transform(df['clean_review'])
@@ -80,9 +68,7 @@ bow_matrix = bow_vectorizer.fit_transform(df['clean_review'])
 tfidf_vectorizer = TfidfVectorizer()
 tfidf_matrix = tfidf_vectorizer.fit_transform(df['clean_review'])
 
-# -----------------------------
-# Word2Vec embeddings
-# -----------------------------
+
 print("Building Word2Vec embeddings...")
 w2v_model = Word2Vec(sentences=all_tokens, vector_size=100, window=5, min_count=1, workers=4)
 
@@ -92,9 +78,6 @@ try:
 except KeyError:
     print("Words not in vocabulary.")
 
-# -----------------------------
-# Sentiment Analysis
-# -----------------------------
 print("Performing sentiment analysis...")
 def get_sentiment(text):
     return TextBlob(text).sentiment.polarity
@@ -102,9 +85,7 @@ def get_sentiment(text):
 df['sentiment_score'] = df['clean_review'].apply(get_sentiment)
 print("\nSentiment distribution:\n", df['sentiment_score'].describe())
 
-# -----------------------------
-# Topic Modeling (LSA)
-# -----------------------------
+
 print("Performing LSA topic modeling...")
 lsa_model = TruncatedSVD(n_components=5, random_state=42)
 lsa_topic_matrix = lsa_model.fit_transform(tfidf_matrix)
@@ -114,9 +95,6 @@ for i, comp in enumerate(lsa_model.components_):
     terms_in_topic = [terms[idx] for idx in comp.argsort()[-10:][::-1]]
     print(f"Topic {i+1}: {', '.join(terms_in_topic)}")
 
-# -----------------------------
-# Vector semantics & similarity
-# -----------------------------
 print("Finding most similar words for key features...")
 key_features = ['battery', 'camera', 'screen', 'price', 'performance']  # example
 for feature in key_features:
@@ -124,8 +102,6 @@ for feature in key_features:
         similar_words = [word for word, score in w2v_model.wv.most_similar(feature, topn=5)]
         print(f"Top words similar to '{feature}': {similar_words}")
 
-# -----------------------------
-# Save processed CSV
-# -----------------------------
+
 df.to_csv(csv_path, index=False)
 print("\nAnalysis complete and CSV updated.")

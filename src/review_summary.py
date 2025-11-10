@@ -4,45 +4,29 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.cluster import AgglomerativeClustering
 import numpy as np
 
-# =========================
-# Load preprocessed reviews
-# =========================
 csv_path = r"C:\Users\bhaga\OneDrive\Desktop\NLP\NLP-Project\flipkart_reviews_translated.csv"
 df = pd.read_csv(csv_path)
 
-# Ensure the column exists
 if 'clean_review' not in df.columns:
     print("Error: 'clean_review' column not found in CSV")
     exit()
 
 reviews = df['clean_review'].astype(str).tolist()
 
-# =========================
-# Vectorize reviews using TF-IDF
-# =========================
 vectorizer = TfidfVectorizer(stop_words='english')
 review_vectors = vectorizer.fit_transform(reviews)
 
-# =========================
-# Compute cosine similarity
-# =========================
 similarity_matrix = cosine_similarity(review_vectors)
 
-# =========================
-# Cluster similar reviews
-# =========================
-n_clusters = 5  # Adjust based on dataset size
+n_clusters = 5  
 clustering = AgglomerativeClustering(
     n_clusters=n_clusters,
-    metric='cosine',   # <-- updated
+    metric='cosine',  
     linkage='average'
 )
 cluster_labels = clustering.fit_predict(review_vectors.toarray())
 df['cluster'] = cluster_labels
 
-# =========================
-# Select representative reviews for each cluster
-# =========================
 representative_reviews = []
 
 for cluster in range(n_clusters):

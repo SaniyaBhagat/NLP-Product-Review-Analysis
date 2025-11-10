@@ -1,7 +1,6 @@
 import pandas as pd
 from googletrans import Translator
 
-# Load CSV
 file_path = r"C:\Users\bhaga\OneDrive\Desktop\NLP\NLP-Project\flipkart-reviews.csv"
 
 df = pd.read_csv(file_path)
@@ -45,5 +44,5 @@ df["Translated_Review"] = translated_reviews
 output_path = r"C:\Users\bhaga\OneDrive\Desktop\NLP\NLP-Project\flipkart_reviews_translated.csv"
 df.to_csv(output_path, index=False)
 
-print("✅ Translation Completed")
+print("Translation Completed")
 print("Saved at:", output_path)
